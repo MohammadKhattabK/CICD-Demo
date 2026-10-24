@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/src/" />
   <Folder Name="/src/Backend/">
+    <Project Path="src/Backend/CICD.Demo.Api.Tests/CICD.Demo.Api.Tests.csproj" />
     <Project Path="src/Backend/CICD.Demo.Api/CICD.Demo.Api.csproj" />
   </Folder>
 </Solution>
