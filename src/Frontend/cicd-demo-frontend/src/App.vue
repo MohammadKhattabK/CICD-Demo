@@ -180,7 +180,8 @@ onMounted(async () => {
       </div>
 
       <footer class="page-footer">
-        <span>© {{ new Date().getFullYear() }} CICD Demo</span>
+       
+        <span>© {{ new Date().getFullYear() }} CICD Demo | CI/CD Live Deployment Test</span>
         <span>واجهة تجريبية لعرض المنتجات</span>
       </footer>
     </section>
