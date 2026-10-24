@@ -1,46 +1,71 @@
-﻿using System.Net;
-using System.Text.Json;
+﻿
+using System.Net;
+using System.Net.Http.Json;
+using CICD.Demo.Api.Models;
 using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace CICD.Demo.Api.Tests;
 
-
-public class WeatherForecastApiTests
-    : IClassFixture<WebApplicationFactory<Program>>
+public sealed class ProductsApiTests : IClassFixture<WebApplicationFactory<Program>>
 {
     private readonly HttpClient _client;
 
-    public WeatherForecastApiTests(
-        WebApplicationFactory<Program> factory)
+    public ProductsApiTests(WebApplicationFactory<Program> factory)
     {
         _client = factory.CreateClient();
     }
 
     [Fact]
-    public async Task GetWeatherForecast_ReturnsFiveForecasts()
+    public async Task GetProducts_ReturnsProducts()
     {
-        // Act
-        var response = await _client.GetAsync("/weatherforecast");
+        var response = await _client.GetAsync("/api/products");
 
-        // Assert: HTTP status
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-        // Read JSON response
-        var json = await response.Content.ReadAsStringAsync();
+        var result = await response.Content
+            .ReadFromJsonAsync<ProductsResponse>();
 
-        using var document = JsonDocument.Parse(json);
-        var forecasts = document.RootElement;
-
-        // Assert: response structure
-        Assert.Equal(JsonValueKind.Array, forecasts.ValueKind);
-        Assert.Equal(5, forecasts.GetArrayLength());
-
-        foreach (var forecast in forecasts.EnumerateArray())
-        {
-            Assert.True(forecast.TryGetProperty("date", out _));
-            Assert.True(forecast.TryGetProperty("temperatureC", out _));
-            Assert.True(forecast.TryGetProperty("summary", out _));
-            Assert.True(forecast.TryGetProperty("temperatureF", out _));
-        }
+        Assert.NotNull(result);
+        Assert.True(result.TotalCount > 0);
+        Assert.NotEmpty(result.Items);
     }
+
+    [Fact]
+    public async Task GetProductById_WhenProductExists_ReturnsProduct()
+    {
+        var response = await _client.GetAsync("/api/products/1");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var product = await response.Content.ReadFromJsonAsync<Product>();
+
+        Assert.NotNull(product);
+        Assert.Equal(1, product.Id);
+    }
+
+    [Fact]
+    public async Task GetProductById_WhenProductDoesNotExist_ReturnsNotFound()
+    {
+        var response = await _client.GetAsync("/api/products/99999");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetCategories_ReturnsCategories()
+    {
+        var response = await _client.GetAsync("/api/products/categories");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var categories = await response.Content
+            .ReadFromJsonAsync<List<string>>();
+
+        Assert.NotNull(categories);
+        Assert.NotEmpty(categories);
+    }
+
+    private sealed record ProductsResponse(
+        int TotalCount,
+        IReadOnlyList<Product> Items);
 }
