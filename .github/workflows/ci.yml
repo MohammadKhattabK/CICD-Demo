@@ -29,8 +29,14 @@ jobs:
       - name: Restore Backend
         run: dotnet restore src/Backend/CICD.Demo.Api/CICD.Demo.Api.csproj
 
+      - name: Restore Tests
+        run: dotnet restore src/Backend/CICD.Demo.Api.Tests/CICD.Demo.Api.Tests.csproj
+
       - name: Build Backend
         run: dotnet build src/Backend/CICD.Demo.Api/CICD.Demo.Api.csproj --configuration Release --no-restore
+
+      - name: Run Backend Tests
+        run: dotnet test src/Backend/CICD.Demo.Api.Tests/CICD.Demo.Api.Tests.csproj --configuration Release --no-restore
 
   frontend-build:
     name: Build Frontend
