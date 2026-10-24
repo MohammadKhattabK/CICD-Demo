@@ -20,4 +20,4 @@ COPY --from=build /app/publish ./
 ENV ASPNETCORE_HTTP_PORTS=10000
 EXPOSE 10000
 
-ENTRYPOINT ["dotnet", "CICD.Demo.Api.dll"]
+ENTRYPOINT ["sh", "-c", "dotnet CICD.Demo.Api.dll --urls http://0.0.0.0:${PORT:-10000}"]
