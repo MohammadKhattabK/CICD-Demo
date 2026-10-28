@@ -17,6 +17,21 @@ jobs:
     name: Build Backend
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: cicd_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -36,6 +51,9 @@ jobs:
         run: dotnet build src/Backend/CICD.Demo.Api/CICD.Demo.Api.csproj --configuration Release --no-restore
 
       - name: Run Backend Tests
+        env:
+          # Enables the test that applies EF migrations to a real PostgreSQL.
+          TEST_POSTGRES_CONNECTION: Host=localhost;Port=5432;Database=cicd_test;Username=postgres;Password=postgres
         run: dotnet test src/Backend/CICD.Demo.Api.Tests/CICD.Demo.Api.Tests.csproj --configuration Release --no-restore
 
   frontend-build:
@@ -71,3 +89,24 @@ jobs:
       - name: Build Frontend
         working-directory: src/Frontend/cicd-demo-frontend
         run: npm run build
+
+  docker-build:
+    name: Docker Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Build API Image
+        run: docker build --tag cicd-demo-api:ci src/Backend/CICD.Demo.Api
+
+      - name: Build Frontend Image
+        run: >-
+          docker build
+          --build-arg VITE_API_BASE_URL=http://localhost:5080
+          --tag cicd-demo-frontend:ci
+          src/Frontend/cicd-demo-frontend
+
+      - name: Validate Compose File
+        run: docker compose config --quiet

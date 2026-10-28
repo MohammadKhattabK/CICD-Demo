@@ -11,5 +11,8 @@ export interface Product {
 
 export interface ProductsResponse {
   totalCount: number
+  page: number
+  pageSize: number
+  totalPages: number
   items: Product[]
 }
