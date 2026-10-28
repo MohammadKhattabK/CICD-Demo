@@ -64,6 +64,10 @@ jobs:
         working-directory: src/Frontend/cicd-demo-frontend
         run: npm run test:unit -- --run
 
+      - name: Lint Frontend
+        working-directory: src/Frontend/cicd-demo-frontend
+        run: npm run lint 
+
       - name: Build Frontend
         working-directory: src/Frontend/cicd-demo-frontend
         run: npm run build
