@@ -27,6 +27,7 @@ public sealed class ProductsApiTests : IClassFixture<WebApplicationFactory<Progr
 
         Assert.NotNull(result);
         Assert.True(result.TotalCount > 0);
+        // Assert.True(result.TotalCount < 0);
         Assert.NotEmpty(result.Items);
     }
 
