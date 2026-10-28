@@ -1,34 +1,59 @@
-
 name: Post-Deployment Smoke Test
 
 on:
   workflow_dispatch:
+    inputs:
+      expected_sha:
+        description: "Commit SHA the API must report (leave empty to skip)"
+        required: false
+  # After a merge to main, wait for Render to deploy that exact commit.
+  push:
+    branches:
+      - main
   schedule:
     - cron: "17 * * * *"
 
 permissions:
   contents: read
+  issues: write
 
 jobs:
   smoke-test:
     name: Check Deployed API
     runs-on: ubuntu-latest
+    timeout-minutes: 25
 
     steps:
-      - name: Check API Liveness
-        run: |
-          curl --fail --silent --show-error \
-            --retry 5 \
-            --retry-delay 10 \
-            --retry-connrefused \
-            --max-time 30 \
-            https://cicd-demo-api-cdyb.onrender.com/health/live
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-      - name: Check API Readiness
+      - name: Run Smoke Test
+        env:
+          EXPECTED_SHA: ${{ github.event_name == 'push' && github.sha || inputs.expected_sha }}
+        run: bash scripts/smoke-test.sh
+
+      - name: Close Failure Issue
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          curl --fail --silent --show-error \
-            --retry 5 \
-            --retry-delay 10 \
-            --retry-connrefused \
-            --max-time 30 \
-            https://cicd-demo-api-cdyb.onrender.com/health/ready
+          number=$(gh issue list --label smoke-test-failure --state open --json number --jq '.[0].number // empty')
+          if [ -n "$number" ]; then
+            gh issue close "$number" --comment "Smoke test passed again: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          fi
+
+      - name: Report Failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          run_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          gh label create smoke-test-failure --color B60205 --description "Deployed app failed its smoke test" 2>/dev/null || true
+          number=$(gh issue list --label smoke-test-failure --state open --json number --jq '.[0].number // empty')
+          if [ -n "$number" ]; then
+            gh issue comment "$number" --body "Smoke test failed again: $run_url"
+          else
+            gh issue create --label smoke-test-failure \
+              --title "Post-deployment smoke test failed" \
+              --body "The smoke test failed (trigger: $GITHUB_EVENT_NAME, commit: $GITHUB_SHA). See the run: $run_url. If a bad deploy caused this, follow docs/deployment-runbook.md to roll back."
+          fi
