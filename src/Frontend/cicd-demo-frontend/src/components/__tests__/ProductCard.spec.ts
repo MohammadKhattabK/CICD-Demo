@@ -62,7 +62,7 @@ describe('ProductCard', () => {
       },
     })
 
-    expect(wrapper.find('.out-of-stock').exists()).toBe(true)
-    expect(wrapper.find('.in-stock').exists()).toBe(false)
+    expect(wrapper.find('.badge-danger').exists()).toBe(true)
+    expect(wrapper.find('.badge-success').exists()).toBe(false)
   })
 })

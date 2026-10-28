@@ -14,6 +14,7 @@ function submit() {
 
 <template>
   <form class="login-card" aria-labelledby="login-title" @submit.prevent="submit">
+    <span class="brand-mark login-mark" aria-hidden="true">C</span>
     <h1 id="login-title">لوحة الإدارة</h1>
     <p class="modal-hint">سجّل الدخول بمفتاح الإدارة لإدارة المنتجات.</p>
 

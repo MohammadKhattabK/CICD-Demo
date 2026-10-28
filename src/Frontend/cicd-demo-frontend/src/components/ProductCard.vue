@@ -5,6 +5,11 @@ defineProps<{ product: Product }>()
 
 const frontendBaseUrl = import.meta.env.BASE_URL
 
+const priceFormat = new Intl.NumberFormat('en-US', {
+  style: 'currency',
+  currency: 'USD',
+})
+
 function resolveImageUrl(path: string) {
   if (!path) return `${frontendBaseUrl}images/product-placeholder.svg`
 
@@ -16,7 +21,7 @@ function resolveImageUrl(path: string) {
 function handleImageError(event: Event) {
   const image = event.target as HTMLImageElement
   image.onerror = null
-  image.src = 'https://placehold.co/600x400/f0f5f2/008755?text=Product'
+  image.src = 'https://placehold.co/600x400/eef0ff/4f46e5?text=Product'
 }
 </script>
 
@@ -39,39 +44,11 @@ function handleImageError(event: Event) {
       <p class="product-description">{{ product.description }}</p>
 
       <div class="product-footer">
-        <div class="product-meta">
-          <strong class="product-price">
-            {{
-              new Intl.NumberFormat('en-US', {
-                style: 'currency',
-                currency: 'USD',
-              }).format(product.price)
-            }}
-          </strong>
+        <strong class="product-price">{{ priceFormat.format(product.price) }}</strong>
 
-          <span class="stock-badge" :class="product.stock > 0 ? 'in-stock' : 'out-of-stock'">
-            <span class="stock-dot"></span>
-            {{ product.stock > 0 ? `${product.stock} متوفر` : 'نفد المخزون' }}
-          </span>
-        </div>
-
-        <div class="cart-icon" aria-label="المنتج">
-          <svg
-            width="21"
-            height="21"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.8"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            aria-hidden="true"
-          >
-            <circle cx="9" cy="21" r="1" />
-            <circle cx="20" cy="21" r="1" />
-            <path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6" />
-          </svg>
-        </div>
+        <span class="badge" :class="product.stock > 0 ? 'badge-success' : 'badge-danger'">
+          {{ product.stock > 0 ? `${product.stock} متوفر` : 'نفد المخزون' }}
+        </span>
       </div>
     </div>
   </article>
