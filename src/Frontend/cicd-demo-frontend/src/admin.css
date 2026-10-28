@@ -1,0 +1,172 @@
+/* Buttons, dialogs and notices used by the product management UI. */
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn {
+  padding: 10px 20px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 150ms,
+    opacity 150ms;
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.btn-small {
+  padding: 7px 14px;
+  font-size: 13px;
+}
+
+.btn-primary {
+  color: white;
+  background: #008755;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #006f46;
+}
+
+.btn-secondary {
+  color: #20352b;
+  background: white;
+  border-color: #cfe0d6;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: #f3f6f4;
+}
+
+.btn-danger {
+  color: white;
+  background: #c0392b;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: #a02d21;
+}
+
+.admin-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid #e6ece8;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  overflow-y: auto;
+  background: rgba(20, 35, 28, 0.55);
+}
+
+.modal {
+  width: min(420px, 100%);
+  padding: 26px;
+  border-radius: 16px;
+  background: white;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+}
+
+.modal-wide {
+  width: min(560px, 100%);
+}
+
+.modal h2 {
+  margin: 0 0 8px;
+  font-size: 20px;
+}
+
+.modal-hint {
+  margin: 0 0 16px;
+  color: #5d6b63;
+  font-size: 14px;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.form-field input,
+.form-field textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #cfe0d6;
+  border-radius: 10px;
+  font: inherit;
+  font-weight: 400;
+  background: white;
+}
+
+.form-field input:focus,
+.form-field textarea:focus {
+  outline: 2px solid #008755;
+  outline-offset: 1px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.field-error,
+.form-error {
+  color: #c0392b;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.form-error {
+  margin: 0 0 12px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-start;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  z-index: 60;
+  padding: 12px 22px;
+  border-radius: 12px;
+  color: white;
+  background: #20352b;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  transform: translateX(-50%);
+}
+
+@media (max-width: 640px) {
+  .topbar-actions {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}

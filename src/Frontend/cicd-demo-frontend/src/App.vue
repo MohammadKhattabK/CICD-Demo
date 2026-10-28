@@ -2,9 +2,23 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import ProductCard from './components/ProductCard.vue'
 import PaginationBar from './components/PaginationBar.vue'
-import { getProducts, getProductCategories, type ProductFilters } from './services/productService'
-import type { Product } from './types/Product'
+import AdminLoginModal from './components/AdminLoginModal.vue'
+import ProductFormModal from './components/ProductFormModal.vue'
+import ConfirmDeleteModal from './components/ConfirmDeleteModal.vue'
+import {
+  checkAdminKey,
+  createProduct,
+  deleteProduct,
+  getProducts,
+  getProductCategories,
+  updateProduct,
+  type ProductFilters,
+} from './services/productService'
+import { clearAdminKey, getAdminKey, setAdminKey } from './services/adminKey'
+import { getErrorMessage, isUnauthorized } from './services/errors'
+import type { Product, ProductInput } from './types/Product'
 import './style.css'
+import './admin.css'
 
 const products = ref<Product[]>([])
 const categories = ref<string[]>([])
@@ -66,18 +80,151 @@ watch([search, category, inStock, sortBy, sortOrder], () => {
 
 watch(filters, loadProducts)
 
-onMounted(async () => {
-  await Promise.all([
-    loadProducts(),
-    getProductCategories()
-      .then((result) => {
-        categories.value = result
-      })
-      .catch(() => {
-        error.value = 'تعذر تحميل التصنيفات.'
-      }),
-  ])
-})
+async function loadCategories() {
+  try {
+    categories.value = await getProductCategories()
+  } catch {
+    error.value = 'تعذر تحميل التصنيفات.'
+  }
+}
+
+onMounted(() => Promise.all([loadProducts(), loadCategories()]))
+
+// --- Admin: create / edit / delete -------------------------------------------------
+
+const isAdmin = ref(Boolean(getAdminKey()))
+const showLogin = ref(false)
+const showForm = ref(false)
+const editing = ref<Product | null>(null)
+const deleting = ref<Product | null>(null)
+const busy = ref(false)
+const dialogError = ref('')
+const notice = ref('')
+let noticeTimer: ReturnType<typeof setTimeout> | undefined
+
+function showNotice(message: string) {
+  notice.value = message
+  clearTimeout(noticeTimer)
+  noticeTimer = setTimeout(() => (notice.value = ''), 4000)
+}
+
+function closeDialogs() {
+  showLogin.value = false
+  showForm.value = false
+  editing.value = null
+  deleting.value = null
+  dialogError.value = ''
+}
+
+function logout() {
+  clearAdminKey()
+  isAdmin.value = false
+  closeDialogs()
+}
+
+function openLogin() {
+  dialogError.value = ''
+  showLogin.value = true
+}
+
+/** A wrong or expired key during a write sends the user back to the login dialog. */
+function handleWriteError(err: unknown) {
+  if (isUnauthorized(err)) {
+    logout()
+    showLogin.value = true
+  }
+
+  dialogError.value = getErrorMessage(err)
+}
+
+async function login(key: string) {
+  busy.value = true
+  dialogError.value = ''
+
+  try {
+    await checkAdminKey(key)
+    setAdminKey(key)
+    isAdmin.value = true
+    closeDialogs()
+    showNotice('تم تسجيل الدخول كمسؤول.')
+  } catch (err) {
+    dialogError.value = getErrorMessage(err)
+  } finally {
+    busy.value = false
+  }
+}
+
+function openCreate() {
+  editing.value = null
+  dialogError.value = ''
+  showForm.value = true
+}
+
+function openEdit(product: Product) {
+  editing.value = product
+  dialogError.value = ''
+  showForm.value = true
+}
+
+function openDelete(product: Product) {
+  dialogError.value = ''
+  deleting.value = product
+}
+
+async function refreshAfterChange() {
+  await Promise.all([loadProducts(), loadCategories()])
+}
+
+async function saveProduct(input: ProductInput) {
+  const target = editing.value
+  busy.value = true
+  dialogError.value = ''
+
+  try {
+    if (target) {
+      await updateProduct(target.id, input)
+    } else {
+      await createProduct(input)
+    }
+
+    closeDialogs()
+    showNotice(target ? 'تم تحديث المنتج.' : 'تمت إضافة المنتج.')
+    await refreshAfterChange()
+  } catch (err) {
+    handleWriteError(err)
+  } finally {
+    busy.value = false
+  }
+}
+
+async function confirmDelete() {
+  const target = deleting.value
+  if (!target) return
+
+  busy.value = true
+  dialogError.value = ''
+
+  try {
+    await deleteProduct(target.id)
+
+    // Deleting the last item of a later page would leave an empty page.
+    const lastOnPage = products.value.length === 1 && page.value > 1
+
+    closeDialogs()
+    showNotice('تم حذف المنتج.')
+
+    if (lastOnPage) {
+      page.value -= 1 // the filters watcher reloads the products
+      await loadCategories()
+    } else {
+      await refreshAfterChange()
+    }
+  } catch (err) {
+    handleWriteError(err)
+  } finally {
+    busy.value = false
+  }
+}
 </script>
 
 <template>
@@ -88,7 +235,21 @@ onMounted(async () => {
         <span>CICD <b>Demo</b></span>
       </a>
 
-      <span class="topbar-label">متجر المنتجات</span>
+      <div class="topbar-actions">
+        <span class="topbar-label">متجر المنتجات</span>
+
+        <template v-if="isAdmin">
+          <button type="button" class="btn btn-primary btn-small" @click="openCreate">
+            + إضافة منتج
+          </button>
+          <button type="button" class="btn btn-secondary btn-small" @click="logout">
+            تسجيل الخروج
+          </button>
+        </template>
+        <button v-else type="button" class="btn btn-secondary btn-small" @click="openLogin">
+          دخول المسؤول
+        </button>
+      </div>
     </header>
 
     <section class="hero">
@@ -178,7 +339,14 @@ onMounted(async () => {
       </div>
 
       <div v-else-if="products.length" class="product-grid">
-        <ProductCard v-for="product in products" :key="product.id" :product="product" />
+        <ProductCard
+          v-for="product in products"
+          :key="product.id"
+          :product="product"
+          :admin="isAdmin"
+          @edit="openEdit"
+          @delete="openDelete"
+        />
       </div>
 
       <PaginationBar v-if="!loading && !error" v-model:page="page" :total-pages="totalPages" />
@@ -192,5 +360,34 @@ onMounted(async () => {
         <span>واجهة تجريبية لعرض المنتجات</span>
       </footer>
     </section>
+
+    <AdminLoginModal
+      v-if="showLogin"
+      :busy="busy"
+      :error="dialogError"
+      @submit="login"
+      @cancel="closeDialogs"
+    />
+
+    <ProductFormModal
+      v-if="showForm"
+      :product="editing"
+      :categories="categories"
+      :busy="busy"
+      :error="dialogError"
+      @save="saveProduct"
+      @cancel="closeDialogs"
+    />
+
+    <ConfirmDeleteModal
+      v-if="deleting"
+      :product="deleting"
+      :busy="busy"
+      :error="dialogError"
+      @confirm="confirmDelete"
+      @cancel="closeDialogs"
+    />
+
+    <div v-if="notice" class="toast" role="status">{{ notice }}</div>
   </main>
 </template>

@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import type { Product } from '../types/Product'
 
-defineProps<{ product: Product }>()
+defineProps<{ product: Product; admin?: boolean }>()
+defineEmits<{ edit: [product: Product]; delete: [product: Product] }>()
 
 const frontendBaseUrl = import.meta.env.BASE_URL
 
@@ -72,6 +73,15 @@ function handleImageError(event: Event) {
             <path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6" />
           </svg>
         </div>
+      </div>
+
+      <div v-if="admin" class="admin-actions">
+        <button type="button" class="btn btn-secondary btn-small" @click="$emit('edit', product)">
+          تعديل
+        </button>
+        <button type="button" class="btn btn-danger btn-small" @click="$emit('delete', product)">
+          حذف
+        </button>
       </div>
     </div>
   </article>

@@ -51,6 +51,7 @@ app.MapGet("/", () => Results.Ok(new
 }));
 
 app.MapProductEndpoints();
+app.MapAdminEndpoints();
 
 // Liveness has no dependencies; readiness also checks the database.
 app.MapHealthChecks("/health/live", new()

@@ -1,5 +1,6 @@
 import api from './api'
-import type { Product, ProductsResponse } from '../types/Product'
+import { getAdminKey } from './adminKey'
+import type { Product, ProductInput, ProductsResponse } from '../types/Product'
 
 export interface ProductFilters {
   search?: string
@@ -29,4 +30,29 @@ export async function getProductById(id: number): Promise<Product> {
 export async function getProductCategories(): Promise<string[]> {
   const { data } = await api.get<string[]>('/api/products/categories')
   return data
+}
+
+function adminHeaders(key = getAdminKey()) {
+  return { 'X-Api-Key': key }
+}
+
+/** Resolves when the key is valid, rejects with a 401 otherwise. */
+export async function checkAdminKey(key: string): Promise<void> {
+  await api.get('/api/admin/check', { headers: adminHeaders(key) })
+}
+
+export async function createProduct(input: ProductInput): Promise<Product> {
+  const { data } = await api.post<Product>('/api/products', input, { headers: adminHeaders() })
+  return data
+}
+
+export async function updateProduct(id: number, input: ProductInput): Promise<Product> {
+  const { data } = await api.put<Product>(`/api/products/${id}`, input, {
+    headers: adminHeaders(),
+  })
+  return data
+}
+
+export async function deleteProduct(id: number): Promise<void> {
+  await api.delete(`/api/products/${id}`, { headers: adminHeaders() })
 }

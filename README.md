@@ -10,7 +10,7 @@ built, tested and deployed with GitHub Actions, Docker and Render.
 - Catalogue statistics endpoint
 - PostgreSQL storage with EF Core migrations (applied automatically on startup)
 - Health checks: `/health/live` (no dependencies) and `/health/ready` (checks the database)
-- Vue storefront with filters and pagination
+- Vue storefront with filters and pagination, plus an admin mode to add, edit and delete products
 - CI: backend build + tests (including migrations on real PostgreSQL), frontend lint/format/tests/build, Docker image builds
 - Post-deployment smoke test that verifies the exact commit is live
 
@@ -63,8 +63,15 @@ cd src/Frontend/cicd-demo-frontend && npm ci && npm run dev
 | POST | `/api/products` | needs `X-Api-Key` |
 | PUT | `/api/products/{id}` | needs `X-Api-Key` |
 | DELETE | `/api/products/{id}` | needs `X-Api-Key`; soft delete |
+| GET | `/api/admin/check` | 204 if `X-Api-Key` is valid, 401 otherwise |
 
 Write endpoints return `403` when no `Admin__ApiKey` is configured and `401` for a missing/wrong key.
+
+## Managing products in the UI
+
+Click **دخول المسؤول** (top bar) and enter the admin key (`Admin__ApiKey` on the server; `dev-admin-key`
+locally). Admin mode shows **+ إضافة منتج** and edit/delete buttons on each card. The key is kept in
+`sessionStorage` for the tab only; it is never part of the build or the repo.
 
 ## Configuration
 
