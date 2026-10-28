@@ -66,13 +66,27 @@ public sealed class ProductsApiTests : IClassFixture<WebApplicationFactory<Progr
         Assert.NotEmpty(categories);
     }
 
-    
+    [Fact]
+    public async Task GetRoot_ReturnsRunningStatusAndCommit()
+    {
+        var response = await _client.GetAsync("/");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var info = await response.Content.ReadFromJsonAsync<RootResponse>();
+
+        Assert.NotNull(info);
+        Assert.Equal("Running", info.Status);
+        Assert.False(string.IsNullOrWhiteSpace(info.Commit));
+    }
+
     [Fact]
     public async Task GetHealthLive_ReturnsHealthy()
     {
         var response = await _client.GetAsync("/health/live");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("Healthy", await response.Content.ReadAsStringAsync());
     }
 
     [Fact]
@@ -81,7 +95,10 @@ public sealed class ProductsApiTests : IClassFixture<WebApplicationFactory<Progr
         var response = await _client.GetAsync("/health/ready");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("Healthy", await response.Content.ReadAsStringAsync());
     }
+
+    private sealed record RootResponse(string Name, string Version, string Commit, string Status);
 
 
     private sealed record ProductsResponse(

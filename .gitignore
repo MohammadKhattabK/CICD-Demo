@@ -426,3 +426,9 @@ FodyWeavers.xsd
 
 # Official VS Code C# Dev Kit Extension exclusion
 #*.lscache
+
+# Local environment and secrets (never commit)
+.env.local
+.env.*.local
+appsettings.*.local.json
+secrets.json

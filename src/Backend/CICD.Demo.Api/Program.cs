@@ -34,6 +34,8 @@ app.MapGet("/", () => Results.Ok(new
 {
     name = "CICD Demo Products API",
     version = "1.0.0",
+    // Set by Render at runtime; lets smoke tests verify which commit is live.
+    commit = Environment.GetEnvironmentVariable("RENDER_GIT_COMMIT") ?? "unknown",
     status = "Running"
 }));
 
