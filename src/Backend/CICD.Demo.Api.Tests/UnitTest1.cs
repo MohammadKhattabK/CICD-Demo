@@ -66,6 +66,24 @@ public sealed class ProductsApiTests : IClassFixture<WebApplicationFactory<Progr
         Assert.NotEmpty(categories);
     }
 
+    
+    [Fact]
+    public async Task GetHealthLive_ReturnsHealthy()
+    {
+        var response = await _client.GetAsync("/health/live");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetHealthReady_ReturnsHealthy()
+    {
+        var response = await _client.GetAsync("/health/ready");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+
     private sealed record ProductsResponse(
         int TotalCount,
         IReadOnlyList<Product> Items);

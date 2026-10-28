@@ -18,6 +18,8 @@ builder.Services.AddCors(options =>
     });
 });
 
+builder.Services.AddHealthChecks();
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -38,11 +40,12 @@ app.MapGet("/", () => Results.Ok(new
 app.MapProductEndpoints();
 
 
-app.MapGet("/health", () => Results.Ok(new
+app.MapHealthChecks("/health/live", new()
 {
-    status = "Healthy",
-    timestamp = DateTime.UtcNow
-}));
+    Predicate = _ => false
+});
+
+app.MapHealthChecks("/health/ready");
 
 app.Run();
 
