@@ -26,7 +26,8 @@ public sealed class ProductsApiTests : IClassFixture<WebApplicationFactory<Progr
             .ReadFromJsonAsync<ProductsResponse>();
 
         Assert.NotNull(result);
-        Assert.True(result.TotalCount > 0);
+        // Assert.True(result.TotalCount > 0);
+        Assert.True(result.TotalCount < 0);
         Assert.NotEmpty(result.Items);
     }
 
