@@ -26,10 +26,26 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Render only redeploys the API when files under its root directory change,
+      # so a frontend-only merge leaves the API on an older commit. Expect the
+      # latest main commit that touched the API, not simply the pushed commit.
+      - name: Find Expected API Commit
+        id: expected
+        if: github.event_name == 'push'
+        env:
+          API_PATH: src/Backend/CICD.Demo.Api
+        run: |
+          sha=$(git log -1 --first-parent --format=%H "$GITHUB_SHA" -- "$API_PATH")
+          echo "Pushed commit: $GITHUB_SHA"
+          echo "Latest commit touching $API_PATH: ${sha:-none}"
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
 
       - name: Run Smoke Test
         env:
-          EXPECTED_SHA: ${{ github.event_name == 'push' && github.sha || inputs.expected_sha }}
+          EXPECTED_SHA: ${{ steps.expected.outputs.sha || inputs.expected_sha }}
         run: bash scripts/smoke-test.sh
 
       - name: Close Failure Issue
