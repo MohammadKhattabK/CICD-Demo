@@ -16,3 +16,13 @@ export interface ProductsResponse {
   totalPages: number
   items: Product[]
 }
+
+/** Body sent when creating or replacing a product. */
+export interface ProductInput {
+  name: string
+  description: string
+  price: number
+  category: string
+  stock: number
+  imageUrl: string
+}

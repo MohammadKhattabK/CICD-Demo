@@ -17,6 +17,16 @@ public sealed class ProductsWriteTests : IClassFixture<ApiFactory>
     }
 
     [Fact]
+    public async Task AdminCheck_ReflectsApiKeyValidity()
+    {
+        var withoutKey = await _factory.CreateClient().GetAsync("/api/admin/check");
+        var withKey = await _factory.CreateAdminClient().GetAsync("/api/admin/check");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, withoutKey.StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent, withKey.StatusCode);
+    }
+
+    [Fact]
     public async Task CreateProduct_WithoutApiKey_ReturnsUnauthorized()
     {
         var response = await _factory.CreateClient().PostAsJsonAsync("/api/products", ValidRequest);
