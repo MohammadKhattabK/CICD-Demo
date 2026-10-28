@@ -1,6 +1,6 @@
 import api from './api'
 import { getAdminKey } from './adminKey'
-import type { Product, ProductInput, ProductsResponse } from '../types/Product'
+import type { Product, ProductInput, ProductStats, ProductsResponse } from '../types/Product'
 
 export interface ProductFilters {
   search?: string
@@ -29,6 +29,11 @@ export async function getProductById(id: number): Promise<Product> {
 
 export async function getProductCategories(): Promise<string[]> {
   const { data } = await api.get<string[]>('/api/products/categories')
+  return data
+}
+
+export async function getProductStats(): Promise<ProductStats> {
+  const { data } = await api.get<ProductStats>('/api/products/stats')
   return data
 }
 

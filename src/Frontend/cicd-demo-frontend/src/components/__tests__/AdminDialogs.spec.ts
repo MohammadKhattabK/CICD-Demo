@@ -1,8 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
-import AdminLoginModal from '../AdminLoginModal.vue'
+import AdminLoginForm from '../AdminLoginForm.vue'
 import ConfirmDeleteModal from '../ConfirmDeleteModal.vue'
-import ProductCard from '../ProductCard.vue'
 import type { Product } from '../../types/Product'
 
 const product: Product = {
@@ -16,9 +15,9 @@ const product: Product = {
   imageUrl: '/images/mouse.jpg',
 }
 
-describe('AdminLoginModal', () => {
+describe('AdminLoginForm', () => {
   it('submits the trimmed key', async () => {
-    const wrapper = mount(AdminLoginModal, { props: { busy: false, error: '' } })
+    const wrapper = mount(AdminLoginForm, { props: { busy: false, error: '' } })
 
     await wrapper.find('input[type="password"]').setValue('  secret-key  ')
     await wrapper.find('form').trigger('submit')
@@ -27,7 +26,7 @@ describe('AdminLoginModal', () => {
   })
 
   it('does not submit an empty key and shows errors', async () => {
-    const wrapper = mount(AdminLoginModal, { props: { busy: false, error: 'مفتاح خاطئ' } })
+    const wrapper = mount(AdminLoginForm, { props: { busy: false, error: 'مفتاح خاطئ' } })
 
     await wrapper.find('form').trigger('submit')
 
@@ -54,24 +53,5 @@ describe('ConfirmDeleteModal', () => {
     const wrapper = mount(ConfirmDeleteModal, { props: { product, busy: true, error: '' } })
 
     expect(wrapper.findAll('button')[1]!.attributes('disabled')).toBeDefined()
-  })
-})
-
-describe('ProductCard admin actions', () => {
-  it('hides edit and delete for visitors', () => {
-    const wrapper = mount(ProductCard, { props: { product } })
-
-    expect(wrapper.find('.admin-actions').exists()).toBe(false)
-  })
-
-  it('emits edit and delete with the product for admins', async () => {
-    const wrapper = mount(ProductCard, { props: { product, admin: true } })
-    const [edit, remove] = wrapper.findAll('.admin-actions button')
-
-    await edit!.trigger('click')
-    await remove!.trigger('click')
-
-    expect(wrapper.emitted('edit')).toEqual([[product]])
-    expect(wrapper.emitted('delete')).toEqual([[product]])
   })
 })

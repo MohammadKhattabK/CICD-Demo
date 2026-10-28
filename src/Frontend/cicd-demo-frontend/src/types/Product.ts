@@ -26,3 +26,11 @@ export interface ProductInput {
   stock: number
   imageUrl: string
 }
+
+export interface ProductStats {
+  totalProducts: number
+  inStock: number
+  outOfStock: number
+  categories: number
+  inventoryValue: number
+}
