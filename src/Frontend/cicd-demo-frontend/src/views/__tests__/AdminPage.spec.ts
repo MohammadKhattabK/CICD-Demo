@@ -122,7 +122,7 @@ describe('AdminPage', () => {
     const wrapper = mount(AdminPage)
     await flushPromises()
 
-    await wrapper.find('.row-actions .btn-danger').trigger('click')
+    await wrapper.find('.row-actions .btn-ghost-danger').trigger('click')
     await wrapper.find('[role="alertdialog"] .btn-danger').trigger('click')
     await flushPromises()
 

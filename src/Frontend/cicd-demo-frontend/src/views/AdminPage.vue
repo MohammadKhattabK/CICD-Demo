@@ -249,118 +249,137 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <main class="store-page admin-page">
-    <header class="topbar">
-      <a class="brand" href="#/" aria-label="CICD Demo">
-        <span class="brand-mark">C</span>
-        <span>CICD <b>Demo</b></span>
-      </a>
+  <div class="page admin-page">
+    <header class="site-header">
+      <div class="container header-inner">
+        <a class="brand" href="#/" aria-label="CICD Demo">
+          <span class="brand-mark">C</span>
+          <span>CICD <b>Demo</b></span>
+        </a>
 
-      <div class="topbar-actions">
-        <span class="topbar-label">لوحة الإدارة</span>
-        <a class="btn btn-secondary btn-small" href="#/">المتجر</a>
-        <button v-if="isAdmin" type="button" class="btn btn-secondary btn-small" @click="logout">
-          تسجيل الخروج
-        </button>
+        <nav class="header-actions">
+          <span class="header-label">لوحة الإدارة</span>
+          <a class="btn btn-secondary btn-small" href="#/">المتجر</a>
+          <button v-if="isAdmin" type="button" class="btn btn-secondary btn-small" @click="logout">
+            تسجيل الخروج
+          </button>
+        </nav>
       </div>
     </header>
 
-    <div v-if="checkingSession" class="state-panel">
-      <span class="loading-spinner"></span>
-      <p>جارٍ التحقق من الجلسة...</p>
-    </div>
-
-    <section v-else-if="!isAdmin" class="login-wrapper">
-      <AdminLoginForm :busy="busy" :error="loginError" @submit="login" />
-    </section>
-
-    <section v-else class="admin-content">
-      <div v-if="stats" class="stats-grid">
-        <div class="stat-card">
-          <span>إجمالي المنتجات</span>
-          <strong>{{ stats.totalProducts }}</strong>
-        </div>
-        <div class="stat-card">
-          <span>متوفر</span>
-          <strong>{{ stats.inStock }}</strong>
-        </div>
-        <div class="stat-card">
-          <span>نفد المخزون</span>
-          <strong>{{ stats.outOfStock }}</strong>
-        </div>
-        <div class="stat-card">
-          <span>قيمة المخزون</span>
-          <strong>{{ money.format(stats.inventoryValue) }}</strong>
-        </div>
-      </div>
-
-      <div class="admin-toolbar">
-        <input
-          v-model="search"
-          class="admin-search"
-          type="search"
-          placeholder="ابحث في المنتجات..."
-          aria-label="البحث في المنتجات"
-        />
-        <button type="button" class="btn btn-primary" @click="openCreate">+ إضافة منتج</button>
-      </div>
-
-      <div v-if="loading" class="state-panel">
+    <main class="container">
+      <div v-if="checkingSession" class="state-panel admin-content">
         <span class="loading-spinner"></span>
-        <p>جارٍ تحميل المنتجات...</p>
+        <p>جارٍ التحقق من الجلسة...</p>
       </div>
 
-      <div v-else-if="loadError" class="state-panel error-panel">
-        <p>{{ loadError }}</p>
-        <button class="retry-button" @click="loadProducts">إعادة المحاولة</button>
-      </div>
+      <section v-else-if="!isAdmin" class="login-wrapper">
+        <AdminLoginForm :busy="busy" :error="loginError" @submit="login" />
+      </section>
 
-      <div v-else-if="products.length" class="table-wrapper">
-        <table class="admin-table">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>الاسم</th>
-              <th>التصنيف</th>
-              <th>السعر</th>
-              <th>المخزون</th>
-              <th>إجراءات</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="product in products" :key="product.id">
-              <td>{{ product.id }}</td>
-              <td>{{ product.name }}</td>
-              <td>{{ product.category }}</td>
-              <td>{{ money.format(product.price) }}</td>
-              <td>
-                <span class="stock-badge" :class="product.stock > 0 ? 'in-stock' : 'out-of-stock'">
-                  {{ product.stock > 0 ? product.stock : 'نفد' }}
-                </span>
-              </td>
-              <td class="row-actions">
-                <button
-                  type="button"
-                  class="btn btn-secondary btn-small"
-                  @click="openEdit(product)"
-                >
-                  تعديل
-                </button>
-                <button type="button" class="btn btn-danger btn-small" @click="openDelete(product)">
-                  حذف
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <section v-else class="admin-content">
+        <div class="admin-heading">
+          <div>
+            <h1>إدارة المنتجات</h1>
+            <p>أضف المنتجات وعدّلها وتحكم في المخزون.</p>
+          </div>
+          <button type="button" class="btn btn-primary" @click="openCreate">+ إضافة منتج</button>
+        </div>
 
-      <div v-else class="state-panel">
-        <p>لا توجد منتجات.</p>
-      </div>
+        <div v-if="stats" class="stats-grid">
+          <div class="stat-card">
+            <span>إجمالي المنتجات</span>
+            <strong>{{ stats.totalProducts }}</strong>
+          </div>
+          <div class="stat-card">
+            <span>متوفر</span>
+            <strong>{{ stats.inStock }}</strong>
+          </div>
+          <div class="stat-card">
+            <span>نفد المخزون</span>
+            <strong>{{ stats.outOfStock }}</strong>
+          </div>
+          <div class="stat-card">
+            <span>قيمة المخزون</span>
+            <strong>{{ money.format(stats.inventoryValue) }}</strong>
+          </div>
+        </div>
 
-      <PaginationBar v-if="!loading && !loadError" v-model:page="page" :total-pages="totalPages" />
-    </section>
+        <div class="admin-toolbar">
+          <input
+            v-model="search"
+            class="input admin-search"
+            type="search"
+            placeholder="ابحث في المنتجات..."
+            aria-label="البحث في المنتجات"
+          />
+        </div>
+
+        <div v-if="loading" class="state-panel">
+          <span class="loading-spinner"></span>
+          <p>جارٍ تحميل المنتجات...</p>
+        </div>
+
+        <div v-else-if="loadError" class="state-panel error-panel">
+          <p>{{ loadError }}</p>
+          <button class="retry-button" @click="loadProducts">إعادة المحاولة</button>
+        </div>
+
+        <div v-else-if="products.length" class="table-wrapper">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>الاسم</th>
+                <th>التصنيف</th>
+                <th>السعر</th>
+                <th>المخزون</th>
+                <th>إجراءات</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="product in products" :key="product.id">
+                <td class="cell-muted">{{ product.id }}</td>
+                <td class="cell-name">{{ product.name }}</td>
+                <td class="cell-muted">{{ product.category }}</td>
+                <td class="cell-price">{{ money.format(product.price) }}</td>
+                <td>
+                  <span class="badge" :class="product.stock > 0 ? 'badge-success' : 'badge-danger'">
+                    {{ product.stock > 0 ? product.stock : 'نفد' }}
+                  </span>
+                </td>
+                <td class="row-actions">
+                  <button
+                    type="button"
+                    class="btn btn-secondary btn-small"
+                    @click="openEdit(product)"
+                  >
+                    تعديل
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-ghost-danger btn-small"
+                    @click="openDelete(product)"
+                  >
+                    حذف
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div v-else class="state-panel">
+          <p>لا توجد منتجات.</p>
+        </div>
+
+        <PaginationBar
+          v-if="!loading && !loadError"
+          v-model:page="page"
+          :total-pages="totalPages"
+        />
+      </section>
+    </main>
 
     <ProductFormModal
       v-if="showForm"
@@ -382,5 +401,5 @@ onUnmounted(() => {
     />
 
     <div v-if="notice" class="toast" role="status">{{ notice }}</div>
-  </main>
+  </div>
 </template>
