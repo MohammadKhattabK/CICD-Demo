@@ -56,6 +56,10 @@ jobs:
         working-directory: src/Frontend/cicd-demo-frontend
         run: npm ci
 
+      - name: Check Frontend Formatting
+        working-directory: src/Frontend/cicd-demo-frontend
+        run: npm run format:check
+
       - name: Run Frontend Tests
         working-directory: src/Frontend/cicd-demo-frontend
         run: npm run test:unit -- --run

@@ -1,4 +1,3 @@
-
 <script setup lang="ts">
 import type { Product } from '../types/Product'
 
@@ -24,13 +23,13 @@ function handleImageError(event: Event) {
 <template>
   <article class="product-card">
     <div class="product-image-wrapper">
-<img
-  :src="resolveImageUrl(product.imageUrl)"
-  :alt="product.name"
-  class="product-image"
-  loading="lazy"
-  @error="handleImageError"
-/>
+      <img
+        :src="resolveImageUrl(product.imageUrl)"
+        :alt="product.name"
+        class="product-image"
+        loading="lazy"
+        @error="handleImageError"
+      />
 
       <span class="category-badge">{{ product.category }}</span>
     </div>
@@ -42,16 +41,15 @@ function handleImageError(event: Event) {
       <div class="product-footer">
         <div class="product-meta">
           <strong class="product-price">
-            {{ new Intl.NumberFormat('en-US', {
-              style: 'currency',
-              currency: 'USD'
-            }).format(product.price) }}
+            {{
+              new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+              }).format(product.price)
+            }}
           </strong>
 
-          <span
-            class="stock-badge"
-            :class="product.stock > 0 ? 'in-stock' : 'out-of-stock'"
-          >
+          <span class="stock-badge" :class="product.stock > 0 ? 'in-stock' : 'out-of-stock'">
             <span class="stock-dot"></span>
             {{ product.stock > 0 ? `${product.stock} متوفر` : 'نفد المخزون' }}
           </span>
