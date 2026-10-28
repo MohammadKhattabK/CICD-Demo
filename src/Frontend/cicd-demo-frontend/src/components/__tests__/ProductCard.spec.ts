@@ -1,4 +1,3 @@
-
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
 import ProductCard from '../ProductCard.vue'
@@ -34,9 +33,7 @@ describe('ProductCard', () => {
 
     const image = wrapper.get('img')
 
-    expect(image.attributes('src')).toBe(
-      'https://example.com/tomato-seeds.jpg',
-    )
+    expect(image.attributes('src')).toBe('https://example.com/tomato-seeds.jpg')
     expect(image.attributes('alt')).toBe('Organic Tomato Seeds')
   })
 
@@ -47,9 +44,7 @@ describe('ProductCard', () => {
       },
     })
 
-    expect(wrapper.get('img').attributes('src')).toContain(
-      'images/product-placeholder.svg',
-    )
+    expect(wrapper.get('img').attributes('src')).toContain('images/product-placeholder.svg')
   })
 
   it('displays the stock quantity when the product is in stock', () => {

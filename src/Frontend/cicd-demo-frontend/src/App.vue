@@ -1,12 +1,7 @@
-
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import ProductCard from './components/ProductCard.vue'
-import {
-  getProducts,
-  getProductCategories,
-  type ProductFilters,
-} from './services/productService'
+import { getProducts, getProductCategories, type ProductFilters } from './services/productService'
 import type { Product } from './types/Product'
 import './style.css'
 
@@ -47,8 +42,7 @@ async function loadProducts() {
   } catch {
     if (currentRequestId !== requestId) return
 
-    error.value =
-      'تعذر تحميل المنتجات. تأكد من تشغيل الـ API وإعداد عنوان الاتصال.'
+    error.value = 'تعذر تحميل المنتجات. تأكد من تشغيل الـ API وإعداد عنوان الاتصال.'
   } finally {
     if (currentRequestId === requestId) {
       loading.value = false
@@ -62,7 +56,7 @@ onMounted(async () => {
   await Promise.all([
     loadProducts(),
     getProductCategories()
-      .then(result => {
+      .then((result) => {
         categories.value = result
       })
       .catch(() => {
@@ -71,7 +65,6 @@ onMounted(async () => {
   ])
 })
 </script>
-
 
 <template>
   <main class="store-page">
@@ -111,15 +104,20 @@ onMounted(async () => {
           <p>تصفح مجموعتنا واعثر على ما تبحث عنه.</p>
         </div>
 
-        <span class="results-count">
-          {{ totalCount }} منتج
-        </span>
+        <span class="results-count"> {{ totalCount }} منتج </span>
       </div>
 
       <div class="filters-panel">
         <label class="search-box">
-          <svg width="19" height="19" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+          <svg
+            width="19"
+            height="19"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            aria-hidden="true"
+          >
             <circle cx="11" cy="11" r="7" />
             <path d="m16 16 4 4" />
           </svg>
@@ -162,17 +160,11 @@ onMounted(async () => {
 
       <div v-else-if="error" class="state-panel error-panel">
         <p>{{ error }}</p>
-        <button class="retry-button" @click="loadProducts">
-          إعادة المحاولة
-        </button>
+        <button class="retry-button" @click="loadProducts">إعادة المحاولة</button>
       </div>
 
       <div v-else-if="products.length" class="product-grid">
-        <ProductCard
-          v-for="product in products"
-          :key="product.id"
-          :product="product"
-        />
+        <ProductCard v-for="product in products" :key="product.id" :product="product" />
       </div>
 
       <div v-else class="state-panel">
@@ -180,11 +172,9 @@ onMounted(async () => {
       </div>
 
       <footer class="page-footer">
-       
         <span>© {{ new Date().getFullYear() }} CICD Demo | CI/CD Live Deployment Test</span>
         <span>واجهة تجريبية لعرض المنتجات</span>
       </footer>
     </section>
   </main>
 </template>
-

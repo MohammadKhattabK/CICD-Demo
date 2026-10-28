@@ -1,4 +1,3 @@
-
 import api from './api'
 import type { Product, ProductsResponse } from '../types/Product'
 
@@ -12,9 +11,7 @@ export interface ProductFilters {
   sortOrder?: 'asc' | 'desc'
 }
 
-export async function getProducts(
-  filters: ProductFilters = {},
-): Promise<ProductsResponse> {
+export async function getProducts(filters: ProductFilters = {}): Promise<ProductsResponse> {
   const { data } = await api.get<ProductsResponse>('/api/products', {
     params: filters,
   })
