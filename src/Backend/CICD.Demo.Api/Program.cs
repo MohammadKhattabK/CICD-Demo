@@ -37,6 +37,13 @@ app.MapGet("/", () => Results.Ok(new
 
 app.MapProductEndpoints();
 
+
+app.MapGet("/health", () => Results.Ok(new
+{
+    status = "Healthy",
+    timestamp = DateTime.UtcNow
+}));
+
 app.Run();
 
 public partial class Program { }
