@@ -6,8 +6,11 @@
    The `Protect main - Require CI` ruleset blocks the merge until both pass.
 2. Merge to `main` -> Render deploys API and frontend (**After CI Checks Pass**).
 3. The same push triggers `Post-Deployment Smoke Test`, which waits (up to 15 min)
-   until the API reports the merged commit in `GET /` (`commit` field, taken from
+   until the API reports the expected commit in `GET /` (`commit` field, taken from
    Render's `RENDER_GIT_COMMIT`), then checks health, products and the frontend.
+   The expected commit is the latest `main` commit that touched `src/Backend/CICD.Demo.Api`,
+   because Render does not redeploy the API for frontend-only merges. If Render's root
+   directory for the API changes, update `API_PATH` in the workflow.
 4. The smoke test also runs hourly. On failure it opens (or comments on) an issue
    labelled `smoke-test-failure`, and closes it when a later run passes.
 
