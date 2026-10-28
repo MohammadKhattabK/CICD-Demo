@@ -9,6 +9,8 @@ export interface ProductFilters {
   inStock?: boolean
   sortBy?: 'price' | 'name' | 'id'
   sortOrder?: 'asc' | 'desc'
+  page?: number
+  pageSize?: number
 }
 
 export async function getProducts(filters: ProductFilters = {}): Promise<ProductsResponse> {

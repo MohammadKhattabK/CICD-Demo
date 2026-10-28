@@ -609,3 +609,31 @@ input {
     transition-duration: 0.01ms !important;
   }
 }
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 28px;
+}
+
+.page-button {
+  padding: 9px 18px;
+  border: 1px solid #cfe0d6;
+  border-radius: 10px;
+  color: #008755;
+  background: white;
+  cursor: pointer;
+}
+
+.page-button:disabled {
+  color: #a9b4ad;
+  background: #f3f6f4;
+  cursor: not-allowed;
+}
+
+.page-status {
+  color: #5d6b63;
+  font-size: 14px;
+}

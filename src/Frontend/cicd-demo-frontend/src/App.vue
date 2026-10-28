@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import ProductCard from './components/ProductCard.vue'
+import PaginationBar from './components/PaginationBar.vue'
 import { getProducts, getProductCategories, type ProductFilters } from './services/productService'
 import type { Product } from './types/Product'
 import './style.css'
@@ -16,6 +17,9 @@ const loading = ref(false)
 const error = ref('')
 
 const totalCount = ref(0)
+const page = ref(1)
+const totalPages = ref(1)
+const PAGE_SIZE = 6
 let requestId = 0
 
 const filters = computed<ProductFilters>(() => ({
@@ -24,6 +28,8 @@ const filters = computed<ProductFilters>(() => ({
   inStock: inStock.value ? true : undefined,
   sortBy: sortBy.value,
   sortOrder: sortOrder.value,
+  page: page.value,
+  pageSize: PAGE_SIZE,
 }))
 
 async function loadProducts() {
@@ -39,6 +45,7 @@ async function loadProducts() {
 
     products.value = result.items
     totalCount.value = result.totalCount
+    totalPages.value = result.totalPages
   } catch {
     if (currentRequestId !== requestId) return
 
@@ -49,6 +56,13 @@ async function loadProducts() {
     }
   }
 }
+
+// Any filter change goes back to the first page; page changes just reload.
+watch([search, category, inStock, sortBy, sortOrder], () => {
+  if (page.value !== 1) {
+    page.value = 1 // triggers the filters watcher below
+  }
+})
 
 watch(filters, loadProducts)
 
@@ -166,6 +180,8 @@ onMounted(async () => {
       <div v-else-if="products.length" class="product-grid">
         <ProductCard v-for="product in products" :key="product.id" :product="product" />
       </div>
+
+      <PaginationBar v-if="!loading && !error" v-model:page="page" :total-pages="totalPages" />
 
       <div v-else class="state-panel">
         <p>لا توجد منتجات مطابقة للبحث الحالي.</p>

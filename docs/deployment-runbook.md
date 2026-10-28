@@ -58,7 +58,7 @@ deploy so the first time is not during an incident.
 
 ## Secrets and configuration
 
-- No secrets are stored in Git (scanned: no passwords, tokens, keys or connection strings).
+- No real secrets are stored in Git (scanned: no tokens, keys or production passwords). `appsettings.Development.json` and `docker-compose.yml` contain local-only development credentials.
 - `src/Frontend/cicd-demo-frontend/.env.*` contain only public API URLs. Vite embeds `VITE_*`
   values in the browser bundle, so never put secrets in them.
 - Real secrets go in Render environment variables (runtime) or GitHub repository secrets
@@ -66,11 +66,26 @@ deploy so the first time is not during an incident.
 - The workflows use the default `GITHUB_TOKEN` with minimal permissions
   (`contents: read`, plus `issues: write` only in the smoke test).
 
-## Database (when added)
+## Database (PostgreSQL)
 
-The app currently has no database. When one is introduced:
+The API stores products in PostgreSQL through EF Core.
 
-- Use versioned migrations (e.g. EF Core migrations) applied by the deploy, never manual SQL; keep them
-  backward compatible (expand, then contract) so a rollback of the app still works with the new schema.
-- Add a DB check to `/health/ready` (`AddDbContextCheck` / `AddNpgSql`) and keep `/health/live` dependency-free.
-- Enable automated backups on the database provider and do a test restore before relying on it.
+- **Migrations** live in `src/Backend/CICD.Demo.Api/Data/Migrations` and are applied automatically when the
+  API starts (`Database__MigrateOnStartup`). CI applies them to a real PostgreSQL and fails if the model changed
+  without a migration. Keep migrations backward compatible (add first, remove later) so rolling the app back
+  still works against the newer schema.
+- **Readiness** (`/health/ready`) checks the database; liveness (`/health/live`) does not, so a database
+  outage makes the service "not ready" without restarting it.
+- **Backups:** enable them on the database provider and do a test restore before relying on it. Render's free
+  PostgreSQL expires after 30 days and has no backups, so treat it as demo data only.
+
+### Render setup (do this before merging the database change)
+
+1. Create a Render PostgreSQL instance (same region as the API).
+2. On the **API service** set environment variables:
+   - `DATABASE_URL` = the database's **Internal Database URL**
+   - `Admin__ApiKey` = a long random value (only needed for write endpoints)
+3. Merge. If the variables are missing the new deploy fails to start and Render keeps serving the previous deploy.
+
+The frontend needs no change. After the deploy, the smoke test checks `/health/ready` (database reachable)
+and `/api/products` (migrated and seeded).

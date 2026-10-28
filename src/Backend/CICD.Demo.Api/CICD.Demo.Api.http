@@ -1,6 +1,45 @@
-@CICD.Demo.Api_HostAddress = http://localhost:5194
+@host = http://localhost:5194
+@apiKey = dev-admin-key
 
-GET {{CICD.Demo.Api_HostAddress}}/weatherforecast/
+GET {{host}}/api/products?search=wireless&sortBy=price&page=1&pageSize=6
 Accept: application/json
 
 ###
+
+GET {{host}}/api/products/stats
+Accept: application/json
+
+###
+
+POST {{host}}/api/products
+Content-Type: application/json
+X-Api-Key: {{apiKey}}
+
+{
+  "name": "Standing Desk",
+  "description": "Height adjustable desk",
+  "price": 399.90,
+  "category": "Home",
+  "stock": 5,
+  "imageUrl": ""
+}
+
+###
+
+PUT {{host}}/api/products/1
+Content-Type: application/json
+X-Api-Key: {{apiKey}}
+
+{
+  "name": "Wireless Headphones",
+  "description": "Updated description",
+  "price": 139.99,
+  "category": "Electronics",
+  "stock": 30,
+  "imageUrl": "/images/headphones.jpg"
+}
+
+###
+
+DELETE {{host}}/api/products/9
+X-Api-Key: {{apiKey}}

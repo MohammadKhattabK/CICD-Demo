@@ -1,26 +1,37 @@
-
+using CICD.Demo.Api.Configuration;
+using CICD.Demo.Api.Data;
 using CICD.Demo.Api.Endpoints;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
+builder.Services.AddProblemDetails();
+builder.Services.AddScoped<AdminApiKeyFilter>();
 
 builder.Services.AddCors(options =>
 {
+    var origins = builder.Configuration
+        .GetSection("Cors:AllowedOrigins")
+        .Get<string[]>() ?? [];
+
     options.AddPolicy("FrontendPolicy", policy =>
     {
         policy
-            .WithOrigins(
-                "http://localhost:5173",
-                "https://cicd-demo-dzry.onrender.com")
+            .WithOrigins(origins)
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
 });
 
-builder.Services.AddHealthChecks();
+builder.Services.AddDatabase();
+
+builder.Services.AddHealthChecks()
+    .AddDbContextCheck<AppDbContext>("database", tags: ["ready"]);
 
 var app = builder.Build();
+
+app.UseExceptionHandler();
+app.UseStatusCodePages();
 
 if (app.Environment.IsDevelopment())
 {
@@ -41,13 +52,18 @@ app.MapGet("/", () => Results.Ok(new
 
 app.MapProductEndpoints();
 
-
+// Liveness has no dependencies; readiness also checks the database.
 app.MapHealthChecks("/health/live", new()
 {
     Predicate = _ => false
 });
 
-app.MapHealthChecks("/health/ready");
+app.MapHealthChecks("/health/ready", new()
+{
+    Predicate = check => check.Tags.Contains("ready")
+});
+
+await app.InitializeDatabaseAsync();
 
 app.Run();
 

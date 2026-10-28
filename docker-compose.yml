@@ -1,0 +1,52 @@
+# Local full stack: PostgreSQL + API + frontend.
+#   docker compose up --build
+# Frontend: http://localhost:8080   API: http://localhost:5080   DB: localhost:5432
+# Override the defaults below by copying .env.example to .env.
+name: cicd-demo
+
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-cicddemo}
+      POSTGRES_USER: ${POSTGRES_USER:-cicd}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-cicd_dev_password}
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build: ./src/Backend/CICD.Demo.Api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ConnectionStrings__Default: >-
+        Host=db;Port=5432;Database=${POSTGRES_DB:-cicddemo};
+        Username=${POSTGRES_USER:-cicd};Password=${POSTGRES_PASSWORD:-cicd_dev_password}
+      Admin__ApiKey: ${ADMIN_API_KEY:-dev-admin-key}
+      Cors__AllowedOrigins__0: http://localhost:8080
+    ports:
+      - "5080:10000"
+
+  frontend:
+    build:
+      context: ./src/Frontend/cicd-demo-frontend
+      args:
+        VITE_API_BASE_URL: http://localhost:5080
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "8080:80"
+
+volumes:
+  db-data:
